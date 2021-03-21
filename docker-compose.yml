@@ -1,0 +1,9 @@
+version: "3.8"
+services:
+  broker-rabbitmq:
+    image: rabbitmq:3-management
+    volumes:
+      - ./rabbitmq:/etc/rabbitmq/
+    ports:
+      - 8080:15672
+      - 5672:5672
