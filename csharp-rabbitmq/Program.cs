@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Threading;
+using CoreRabbitMQ;
 
 namespace csharp_rabbitmq
 {
@@ -15,15 +16,15 @@ namespace csharp_rabbitmq
         }
         private static void Main(string[] args)
         {
-            const string queueName = "Queue Test";
-            
-            var publisher = new RabbitMQPublisher();
-            publisher.publishStringMessageToQueue("Ricardo Test",queueName);
-            
-            Thread.Sleep(TimeSpan.FromSeconds(1));
-
-            using var consumer = new RabbitMqConsumer();
-            consumer.Start(queueName,PrintMessage);
+            // const string queueName = "Queue Test";
+            //
+            // var publisher = new RabbitMQPublisher();
+            // publisher.publishStringMessageToQueue("Ricardo Test",queueName);
+            //
+            // Thread.Sleep(TimeSpan.FromSeconds(1));
+            //
+            // using var consumer = new RabbitMqConsumer();
+            // consumer.Start(queueName,PrintMessage);
             
             Console.WriteLine(" [*] Waiting for messages.");
             Console.ReadLine();

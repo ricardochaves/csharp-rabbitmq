@@ -1,7 +1,7 @@
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace csharp_rabbitmq
+namespace CoreRabbitMQ
 {
     public class Payload
     {
@@ -33,5 +33,6 @@ namespace csharp_rabbitmq
         {
             _channel.BasicNack(_ea.DeliveryTag,false,false);
         }
+
     }
 }

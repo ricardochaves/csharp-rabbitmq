@@ -1,6 +1,6 @@
 using RabbitMQ.Client;
 
-namespace csharp_rabbitmq
+namespace CoreRabbitMQ
 {
     public class RabbitMqChannelFactory
     {

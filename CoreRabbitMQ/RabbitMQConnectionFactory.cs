@@ -1,10 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using RabbitMQ.Client;
+
 // using Microsoft.Extensions.Logging;
 
-namespace csharp_rabbitmq
+namespace CoreRabbitMQ
 {
     public class RabbitMqConnectionFactory
     {
@@ -19,30 +19,38 @@ namespace csharp_rabbitmq
         private ConnectionFactory CreateConnectionFactory()
         {
             //https://www.rabbitmq.com/dotnet-api-guide.html#connection-recovery
-            // TODO: Use a list: https://www.rabbitmq.com/dotnet-api-guide.html#endpoints-list
             return new ConnectionFactory
             {
                 AutomaticRecoveryEnabled = true,
                 NetworkRecoveryInterval = TimeSpan.FromSeconds(10),
                 ClientProvidedName = "app: test"+Guid.NewGuid(),
-                Uri = new Uri("amqp://guest:guest@localhost:5672"),
                 RequestedHeartbeat = TimeSpan.FromSeconds(5)
             };
         }
         
         public IConnection CreateConnection()
         {
-            var factory = this.CreateConnectionFactory();
+            
+            // https://www.rabbitmq.com/dotnet-api-guide.html#endpoints-list
+            var endpoints = new System.Collections.Generic.List<AmqpTcpEndpoint> {
+                new AmqpTcpEndpoint("localhost",5672),
+                new AmqpTcpEndpoint("localhost",5673),
+            };
+            
+            var factory = CreateConnectionFactory();
+            
+            factory.UserName = "guest";
+            factory.Password = "guest";
             
             while (true)
             {
                 try
                 {
-                    var conn = factory.CreateConnection();
+                    var conn = factory.CreateConnection(endpoints);
                     _conn = conn;
                     return conn;
                 }
-                catch (RabbitMQ.Client.Exceptions.BrokerUnreachableException)
+                catch (RabbitMQ.Client.Exceptions.BrokerUnreachableException e)
                 {
                     
                     //_logger.LogWarning("BrokerUnreachableException occurred, retrying in 5 seconds");

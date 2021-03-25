@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace csharp_rabbitmq
+namespace CoreRabbitMQ
 {
     public class RabbitMqConsumer: IDisposable
     {
@@ -37,7 +37,7 @@ namespace csharp_rabbitmq
             var consumerTag = channel.BasicConsume(queueName, false, consumer);
             
         }
-
+        
         public void Dispose()
         {
             _connectionFactory.CloseAllConnections();

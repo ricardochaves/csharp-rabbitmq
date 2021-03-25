@@ -7,3 +7,11 @@ services:
     ports:
       - 8080:15672
       - 5672:5672
+        
+  broker-rabbitmq2:
+    image: rabbitmq:3-management
+    volumes:
+      - ./rabbitmq:/etc/rabbitmq/
+    ports:
+      - 8081:15672
+      - 5673:5672
