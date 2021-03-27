@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreRabbitMQ;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace MainAPI.Controllers
 {
@@ -18,28 +20,32 @@ namespace MainAPI.Controllers
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
+        private readonly RabbitMqPublisher _publisher;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, RabbitMqPublisher publisher)
         {
             _logger = logger;
+            _publisher = publisher;
         }
 
         [HttpGet]
         public IEnumerable<WeatherForecast> Get()
         {
-            
-            
+
+
             const string queueName = "Queue Test";
-            
-            var publisher = new RabbitMQPublisher(_logger);
-    
-            
-            publisher.PublishStringMessageToQueue("Ricardo Test",queueName);
-            
-            publisher.PublishBatchMessages(new List<Messages.StringMessage>()
+
+            var x = Activity.Current;
+
+            var objToSend = new Dictionary<string, string> {{"msg", "Ricardo Test"}};
+            var message = new RabbitMqMessage(objToSend, queueName);
+
+            _publisher.PublishMessage(message);
+
+            _publisher.PublishBatchMessages(new List<RabbitMqMessage>()
             {
-                new() {message = "m1", queueName = queueName},
-                new() {message = "m2", queueName = queueName}
+                new(objToSend,  queueName) ,
+                new(objToSend,  queueName)
             });
 
 

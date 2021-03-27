@@ -2,20 +2,20 @@ using System;
 using System.Threading;
 using RabbitMQ.Client;
 
-// using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace CoreRabbitMQ
 {
     public class RabbitMqConnectionFactory
     {
-        // private readonly ILogger _logger;
-        // TODO: Inject log
-        // public RabbitMqConnectionFactory(ILogger logger)
-        // {
-        //     _logger = logger;
-        // }
-        private IConnection _conn;
-        
+        private readonly ILogger _logger;
+
+        public RabbitMqConnectionFactory(ILogger logger)
+        {
+            _logger = logger;
+        }
+        private IConnection? _conn;
+
         private ConnectionFactory CreateConnectionFactory()
         {
             //https://www.rabbitmq.com/dotnet-api-guide.html#connection-recovery
@@ -27,21 +27,21 @@ namespace CoreRabbitMQ
                 RequestedHeartbeat = TimeSpan.FromSeconds(5)
             };
         }
-        
+
         public IConnection CreateConnection()
         {
-            
+
             // https://www.rabbitmq.com/dotnet-api-guide.html#endpoints-list
             var endpoints = new System.Collections.Generic.List<AmqpTcpEndpoint> {
                 new AmqpTcpEndpoint("localhost",5672),
                 new AmqpTcpEndpoint("localhost",5673),
             };
-            
+
             var factory = CreateConnectionFactory();
-            
+
             factory.UserName = "guest";
             factory.Password = "guest";
-            
+
             while (true)
             {
                 try
@@ -50,10 +50,10 @@ namespace CoreRabbitMQ
                     _conn = conn;
                     return conn;
                 }
-                catch (RabbitMQ.Client.Exceptions.BrokerUnreachableException e)
+                catch (RabbitMQ.Client.Exceptions.BrokerUnreachableException)
                 {
-                    
-                    //_logger.LogWarning("BrokerUnreachableException occurred, retrying in 5 seconds");
+
+                    _logger.LogWarning("BrokerUnreachableException occurred, retrying in 5 seconds");
                     Thread.Sleep(5000);
                 }
             }
@@ -61,6 +61,7 @@ namespace CoreRabbitMQ
 
         public void CloseAllConnections()
         {
+            if (_conn == null) return;
             _conn.Close();
             _conn.Dispose();
         }

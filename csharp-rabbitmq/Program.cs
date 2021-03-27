@@ -9,7 +9,7 @@ namespace csharp_rabbitmq
     {
         private static void PrintMessage(Payload payload)
         {
-            var bytesAsString = Encoding.UTF8.GetString(payload.GetBody());
+            var bytesAsString = Encoding.UTF8.GetString(payload.Body);
             Console.Write(bytesAsString);
             payload.Ack();
 
@@ -25,7 +25,7 @@ namespace csharp_rabbitmq
             //
             // using var consumer = new RabbitMqConsumer();
             // consumer.Start(queueName,PrintMessage);
-            
+
             Console.WriteLine(" [*] Waiting for messages.");
             Console.ReadLine();
 

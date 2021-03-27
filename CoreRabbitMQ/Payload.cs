@@ -5,18 +5,14 @@ namespace CoreRabbitMQ
 {
     public class Payload
     {
-        private readonly byte[] _body;
+        public byte[] Body { get; }
         private readonly IModel _channel;
         private readonly BasicDeliverEventArgs _ea;
         public Payload(byte[] body, IModel channel, BasicDeliverEventArgs ea)
         {
-            _body = body;
+            Body = body;
             _channel = channel;
             _ea =ea;
-        }
-        public byte[] GetBody()
-        {
-            return _body;
         }
 
         public void Ack()
@@ -28,11 +24,10 @@ namespace CoreRabbitMQ
         {
             _channel.BasicNack(_ea.DeliveryTag,false,true);
         }
-        
+
         public void NackAndDiscard()
         {
             _channel.BasicNack(_ea.DeliveryTag,false,false);
         }
-
     }
 }
