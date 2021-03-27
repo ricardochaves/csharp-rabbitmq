@@ -1,18 +1,21 @@
 using System;
 using System.Threading;
+using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 
 using Microsoft.Extensions.Logging;
 
 namespace CoreRabbitMQ
 {
-    public class RabbitMqConnectionFactory
+    internal class RabbitMqConnectionFactory
     {
         private readonly ILogger _logger;
+        private readonly IConfigurationRoot _configuration;
 
-        public RabbitMqConnectionFactory(ILogger logger)
+        public RabbitMqConnectionFactory(ILogger logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = (IConfigurationRoot)configuration;
         }
         private IConnection? _conn;
 
@@ -22,9 +25,11 @@ namespace CoreRabbitMQ
             return new ConnectionFactory
             {
                 AutomaticRecoveryEnabled = true,
-                NetworkRecoveryInterval = TimeSpan.FromSeconds(10),
-                ClientProvidedName = "app: test"+Guid.NewGuid(),
-                RequestedHeartbeat = TimeSpan.FromSeconds(5)
+                NetworkRecoveryInterval =
+                    TimeSpan.FromSeconds(_configuration.GetValue<double>("CoreRabbitMq:NetworkRecoveryIntervalSeconds")),
+                ClientProvidedName = _configuration.GetValue<string>("CoreRabbitMq:ClientProvidedNamePrefix")+Guid.NewGuid(),
+                RequestedHeartbeat =
+                    TimeSpan.FromSeconds(Convert.ToDouble(_configuration.GetValue<double>("CoreRabbitMq:RequestedHeartbeatSeconds")))
             };
         }
 
@@ -32,15 +37,19 @@ namespace CoreRabbitMQ
         {
 
             // https://www.rabbitmq.com/dotnet-api-guide.html#endpoints-list
-            var endpoints = new System.Collections.Generic.List<AmqpTcpEndpoint> {
-                new AmqpTcpEndpoint("localhost",5672),
-                new AmqpTcpEndpoint("localhost",5673),
+
+            var endpoints = new System.Collections.Generic.List<AmqpTcpEndpoint>
+            {
+                new(_configuration.GetValue<string>("CoreRabbitMq:Hosts:0:Host"),
+                    _configuration.GetValue<int>("CoreRabbitMq:Hosts:0:Port")),
+                new(_configuration.GetValue<string>("CoreRabbitMq:Hosts:1:Host"),
+                    _configuration.GetValue<int>("CoreRabbitMq:Hosts:1:Port"))
             };
 
             var factory = CreateConnectionFactory();
 
-            factory.UserName = "guest";
-            factory.Password = "guest";
+            factory.UserName = _configuration.GetValue<string>("CoreRabbitMq:UserName");
+            factory.Password = _configuration.GetValue<string>("CoreRabbitMq:Password");
 
             while (true)
             {

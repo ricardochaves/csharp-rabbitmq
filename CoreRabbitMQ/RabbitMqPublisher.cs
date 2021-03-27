@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -10,13 +11,12 @@ namespace CoreRabbitMQ
     public class RabbitMqPublisher
     {
         private readonly IModel _channel;
-
         private readonly ILogger<RabbitMqPublisher> _logger;
 
-        public RabbitMqPublisher(ILogger<RabbitMqPublisher> logger)
+        public RabbitMqPublisher(ILogger<RabbitMqPublisher> logger, IConfiguration configuration)
         {
             _logger = logger;
-            IConnection conn = new RabbitMqConnectionFactory(_logger).CreateConnection();
+            IConnection conn = new RabbitMqConnectionFactory(_logger,configuration).CreateConnection();
             _channel = new RabbitMqChannelFactory(_logger).CreateChannel(conn);
         }
 

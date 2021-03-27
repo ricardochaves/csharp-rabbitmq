@@ -1,9 +1,12 @@
+
 namespace CoreRabbitMQ
 {
     public class RabbitMqMessage
     {
         public string QueueName { get; }
         private readonly string? _exchangeName;
+
+
         public object Message { get; }
 
         public string ExchangeName => _exchangeName ?? "";

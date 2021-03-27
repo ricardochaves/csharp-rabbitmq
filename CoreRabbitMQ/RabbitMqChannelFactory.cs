@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CoreRabbitMQ
 {
-    public class RabbitMqChannelFactory
+    internal class RabbitMqChannelFactory
     {
         private IModel? _channel;
         private readonly ILogger _logger;

@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -10,11 +11,13 @@ namespace CoreRabbitMQ
         private readonly ILogger<RabbitMqConsumer> _logger;
         private readonly RabbitMqConnectionFactory _connectionFactory;
         private readonly RabbitMqChannelFactory _channelFactory;
+        private readonly IConfiguration _configuration;
         private string? _consumerTag;
-        public RabbitMqConsumer(ILogger<RabbitMqConsumer> logger)
+        public RabbitMqConsumer(ILogger<RabbitMqConsumer> logger, IConfiguration configuration)
         {
             _logger = logger;
-            _connectionFactory = new RabbitMqConnectionFactory(_logger);
+            _configuration = configuration;
+            _connectionFactory = new RabbitMqConnectionFactory(_logger, _configuration);
             _channelFactory = new  RabbitMqChannelFactory(logger);
         }
 
