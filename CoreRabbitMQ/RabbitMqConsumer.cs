@@ -11,13 +11,11 @@ namespace CoreRabbitMQ
         private readonly ILogger<RabbitMqConsumer> _logger;
         private readonly RabbitMqConnectionFactory _connectionFactory;
         private readonly RabbitMqChannelFactory _channelFactory;
-        private readonly IConfiguration _configuration;
         private string? _consumerTag;
         public RabbitMqConsumer(ILogger<RabbitMqConsumer> logger, IConfiguration configuration)
         {
             _logger = logger;
-            _configuration = configuration;
-            _connectionFactory = new RabbitMqConnectionFactory(_logger, _configuration);
+            _connectionFactory = new RabbitMqConnectionFactory(_logger, configuration);
             _channelFactory = new  RabbitMqChannelFactory(logger);
         }
 

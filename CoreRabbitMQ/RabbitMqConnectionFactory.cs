@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
@@ -10,14 +11,16 @@ namespace CoreRabbitMQ
     internal class RabbitMqConnectionFactory
     {
         private readonly ILogger _logger;
-        private readonly IConfigurationRoot _configuration;
+        private IConnection? _conn;
+        private readonly CoreRabbitMqConfiguration _configuration;
 
         public RabbitMqConnectionFactory(ILogger logger, IConfiguration configuration)
         {
             _logger = logger;
-            _configuration = (IConfigurationRoot)configuration;
+            _configuration = configuration.GetSection("CoreRabbitMq").Get<CoreRabbitMqConfiguration>();
+            if (_configuration == null)
+                throw new Exception("The configuration is wrong. Please check the values");
         }
-        private IConnection? _conn;
 
         private ConnectionFactory CreateConnectionFactory()
         {
@@ -25,11 +28,9 @@ namespace CoreRabbitMQ
             return new ConnectionFactory
             {
                 AutomaticRecoveryEnabled = true,
-                NetworkRecoveryInterval =
-                    TimeSpan.FromSeconds(_configuration.GetValue<double>("CoreRabbitMq:NetworkRecoveryIntervalSeconds")),
-                ClientProvidedName = _configuration.GetValue<string>("CoreRabbitMq:ClientProvidedNamePrefix")+Guid.NewGuid(),
-                RequestedHeartbeat =
-                    TimeSpan.FromSeconds(Convert.ToDouble(_configuration.GetValue<double>("CoreRabbitMq:RequestedHeartbeatSeconds")))
+                NetworkRecoveryInterval = TimeSpan.FromSeconds(_configuration.NetworkRecoveryIntervalSeconds),
+                ClientProvidedName = _configuration.ClientProvidedNamePrefix+Guid.NewGuid(),
+                RequestedHeartbeat = TimeSpan.FromSeconds(_configuration.RequestedHeartbeatSeconds)
             };
         }
 
@@ -37,27 +38,19 @@ namespace CoreRabbitMQ
         {
 
             // https://www.rabbitmq.com/dotnet-api-guide.html#endpoints-list
-
-            var endpoints = new System.Collections.Generic.List<AmqpTcpEndpoint>
-            {
-                new(_configuration.GetValue<string>("CoreRabbitMq:Hosts:0:Host"),
-                    _configuration.GetValue<int>("CoreRabbitMq:Hosts:0:Port")),
-                new(_configuration.GetValue<string>("CoreRabbitMq:Hosts:1:Host"),
-                    _configuration.GetValue<int>("CoreRabbitMq:Hosts:1:Port"))
-            };
+            var endpoints = _configuration.Hosts.Select(host => new AmqpTcpEndpoint(host.Host, host.Port)).ToList();
 
             var factory = CreateConnectionFactory();
 
-            factory.UserName = _configuration.GetValue<string>("CoreRabbitMq:UserName");
-            factory.Password = _configuration.GetValue<string>("CoreRabbitMq:Password");
+            factory.UserName = _configuration.UserName;
+            factory.Password = _configuration.Password;
 
             while (true)
             {
                 try
                 {
-                    var conn = factory.CreateConnection(endpoints);
-                    _conn = conn;
-                    return conn;
+                    _conn = factory.CreateConnection(endpoints);
+                    return _conn;
                 }
                 catch (RabbitMQ.Client.Exceptions.BrokerUnreachableException)
                 {
